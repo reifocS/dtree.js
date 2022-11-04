@@ -3,6 +3,7 @@ var fs = require("fs"),
   filePathJson = path.join(__dirname, "/assets/template.json");
 filePathYaml = path.join(__dirname, "/assets/config.yaml");
 const YAML = require("yaml");
+var { performance } = require("perf_hooks");
 
 const isNestedObject = (property) => {
   return "$ref" in property;
@@ -15,8 +16,8 @@ const getIdFromRef = (ref) => {
 
 function dfs(propertyId, template, config, list) {
   const objInTemplate = template[propertyId];
+  //key in the config and value in the config (yaml)
   const [keyC, valueC] = config;
-
   if (Array.isArray(valueC)) {
     let i = 0;
     for (const v of valueC) {
@@ -27,63 +28,65 @@ function dfs(propertyId, template, config, list) {
   }
   if (objInTemplate.required) {
     for (const required of objInTemplate.required) {
-      if (typeof valueC[required] !== "object")
+      if (typeof valueC[required] !== "object") {
         list.push({
           path: `${keyC}.${required}`,
           value: `${valueC[required]}`,
         });
-      //if required === name 'supposed to be generic lol'
+      }
+      //TODO if required === name 'supposed to be generic lol'
     }
   }
   for (const [k, v] of Object.entries(valueC)) {
-    const templateRepresentation = objInTemplate.properties[k];
+    let templateRepresentation = objInTemplate.properties[k];
+    //if it's an array, ref is nested inside items
+    if (templateRepresentation.type === "array")
+      templateRepresentation = templateRepresentation.items;
     if (templateRepresentation && isNestedObject(templateRepresentation)) {
       let id = getIdFromRef(templateRepresentation["$ref"]);
-      //console.log(id);
-      dfs(id, template, [keyC + "." + k, v], list);
-    } else if (
-      templateRepresentation.items &&
-      isNestedObject(templateRepresentation.items)
-    ) {
-      let id = getIdFromRef(templateRepresentation.items["$ref"]);
-      //console.log(id);
       dfs(id, template, [keyC + "." + k, v], list);
     }
   }
 }
 console.time("exec");
-const args = process.argv;
 
-fs.readFile(filePathJson, { encoding: "utf-8" }, function (err, template) {
-  if (!err) {
-    template = JSON.parse(template).definitions;
-    fs.readFile(filePathYaml, { encoding: "utf-8" }, function (err, config) {
-      config = YAML.parse(config);
-      const root = config.kind;
-      let output = [];
+const PASS = 10_000;
+const passes = [...Array(PASS).keys()].map((i) => {
+  const start = performance.now();
 
-      for (const [k, v] of Object.entries(template)) {
-        if (v.properties?.kind?.enum) {
-          if (v.properties.kind.enum[0] === root) {
-            dfs(k, template, [root, config], output);
-            /*
-            const rootInTemplate = template[k];
-            for (const property of Object.entries(config)) {
-              const propertyName = property[0];
-              const templateProperty = rootInTemplate.properties[propertyName];
-              if (isNestedObject(templateProperty)) {
-                let id = getIdFromRef(templateProperty["$ref"]);
-                dfs(id, template, property, output);
-              }
-            }
-            */
-          }
-        }
+  let template = fs.readFileSync(filePathJson, {
+    encoding: "utf-8",
+    flag: "r",
+  });
+  template = JSON.parse(template).definitions;
+  let config = fs.readFileSync(filePathYaml, { encoding: "utf-8", flag: "r" });
+  config = YAML.parse(config);
+  const root = config.kind;
+  let output = [];
+
+  //Find the entry point in the json schema
+  for (const [k, v] of Object.entries(template)) {
+    if (v.properties?.kind?.enum) {
+      if (v.properties.kind.enum[0] === root) {
+        dfs(k, template, [root, config], output);
+        break;
       }
-      console.log(output);
-      console.timeEnd("exec");
-    });
-  } else {
-    console.log(err);
+    }
   }
+  //console.log(output);
+  const end = performance.now();
+
+  const time = end - start;
+  return time;
 });
+
+const sum = passes.reduce((a, b) => a + b, 0);
+
+console.log(`
+==========================================
+total duration: ${sum}ms
+mean duration: ${sum / PASS}ms
+max duration: ${Math.max(...passes)}ms
+min duration: ${Math.min(...passes)}ms
+==========================================
+`);
