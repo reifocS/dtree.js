@@ -13,7 +13,14 @@ const getIdFromRef = (ref) => {
   const r = ref.split("/");
   return r[r.length - 1];
 };
-
+/**
+ *
+ * @param {*} propertyId key in the definitions
+ * @param {*} template the definitions
+ * @param {*} config [key, value] in the config
+ * @param {*} list the decision tree
+ * @returns
+ */
 function dfs(propertyId, template, config, list) {
   const objInTemplate = template[propertyId];
   //key in the config and value in the config (yaml)
@@ -48,37 +55,41 @@ function dfs(propertyId, template, config, list) {
     }
   }
 }
-console.time("exec");
 
-const PASS = 10_000;
-const passes = [...Array(PASS).keys()].map((i) => {
-  const start = performance.now();
+const PASS = 1_000;
+const passes = Array(PASS)
+  .fill(0)
+  .map(() => {
+    const start = performance.now();
 
-  let template = fs.readFileSync(filePathJson, {
-    encoding: "utf-8",
-    flag: "r",
-  });
-  template = JSON.parse(template).definitions;
-  let config = fs.readFileSync(filePathYaml, { encoding: "utf-8", flag: "r" });
-  config = YAML.parse(config);
-  const root = config.kind;
-  let output = [];
+    let template = fs.readFileSync(filePathJson, {
+      encoding: "utf-8",
+      flag: "r",
+    });
+    template = JSON.parse(template).definitions;
+    let config = fs.readFileSync(filePathYaml, {
+      encoding: "utf-8",
+      flag: "r",
+    });
+    config = YAML.parse(config);
+    const root = config.kind;
+    let output = [];
 
-  //Find the entry point in the json schema
-  for (const [k, v] of Object.entries(template)) {
-    if (v.properties?.kind?.enum) {
-      if (v.properties.kind.enum[0] === root) {
-        dfs(k, template, [root, config], output);
-        break;
+    //Find the entry point in the json schema
+    for (const [k, v] of Object.entries(template)) {
+      if (v.properties?.kind?.enum) {
+        if (v.properties.kind.enum[0] === root) {
+          dfs(k, template, [root, config], output);
+          break;
+        }
       }
     }
-  }
-  //console.log(output);
-  const end = performance.now();
+    //console.log(output);
+    const end = performance.now();
 
-  const time = end - start;
-  return time;
-});
+    const time = end - start;
+    return time;
+  });
 
 const sum = passes.reduce((a, b) => a + b, 0);
 
