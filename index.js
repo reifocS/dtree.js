@@ -34,7 +34,9 @@ function dfs(propertyId, template, config, list) {
     return;
   }
   if (objInTemplate.required) {
+
     for (const required of objInTemplate.required) {
+      //console.log(propertyId + "." + required + ":" + objInTemplate.properties[required].type);
       if (typeof valueC[required] !== "object") {
         list.push({
           path: `${keyC}.${required}`,
@@ -56,7 +58,7 @@ function dfs(propertyId, template, config, list) {
   }
 }
 
-const PASS = 1_000;
+const PASS = 1;
 const passes = Array(PASS)
   .fill(0)
   .map(() => {
@@ -84,7 +86,7 @@ const passes = Array(PASS)
         }
       }
     }
-    //console.log(output);
+    console.log(output);
     const end = performance.now();
 
     const time = end - start;
@@ -92,7 +94,6 @@ const passes = Array(PASS)
   });
 
 const sum = passes.reduce((a, b) => a + b, 0);
-
 console.log(`
 ==========================================
 total duration: ${sum}ms
