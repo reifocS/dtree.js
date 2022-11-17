@@ -9,9 +9,10 @@ const path = require("path");
 function readFile(location) {
   try {
     return fs.readFileSync(location, "utf8");
-  }
-  catch (error) {
-    throw new Error(`An error occured while trying to read the ${location} file (${error}).`);
+  } catch (error) {
+    throw new Error(
+      `An error occured while trying to read the ${location} file (${error}).`
+    );
   }
 }
 
@@ -23,9 +24,10 @@ function readFile(location) {
 function copyFile(source, destination) {
   try {
     fs.copyFileSync(source, destination, fs.constants.COPYFILE_FICLONE);
-  }
-  catch (error) {
-    throw new Error(`An error occured while trying to copy the ${source} file(${error}).`);
+  } catch (error) {
+    throw new Error(
+      `An error occured while trying to copy the ${source} file(${error}).`
+    );
   }
 }
 
@@ -37,9 +39,10 @@ function copyFile(source, destination) {
 function listFiles(location) {
   try {
     return fs.readdirSync(location, "utf8");
-  }
-  catch (error) {
-    throw new Error(`An error occured while trying to read the files in ${location} (${error}).`);
+  } catch (error) {
+    throw new Error(
+      `An error occured while trying to read the files in ${location} (${error}).`
+    );
   }
 }
 
@@ -52,9 +55,10 @@ function createDir(location) {
 
   try {
     fs.mkdirSync(dirname, { recursive: true });
-  }
-  catch (error) {
-    throw new Error(`An error occured while trying to create the ${location} directory(${error}).`);
+  } catch (error) {
+    throw new Error(
+      `An error occured while trying to create the ${location} directory(${error}).`
+    );
   }
 }
 
@@ -66,12 +70,12 @@ function createDir(location) {
 function writeFile(location, data) {
   try {
     fs.writeFileSync(location, data);
-  }
-  catch (error) {
-    throw new Error(`An error occured while trying to write in ${location} (${error}).`);
+  } catch (error) {
+    throw new Error(
+      `An error occured while trying to write in ${location} (${error}).`
+    );
   }
 }
-
 
 /**
  * Wrapper around fs.extname with error handling
@@ -81,9 +85,10 @@ function writeFile(location, data) {
 function isDirectory(location) {
   try {
     return !path.extname(location);
-  }
-  catch (error) {
-    throw new Error(`An error occured while trying to read ${location} (${error}).`);
+  } catch (error) {
+    throw new Error(
+      `An error occured while trying to read ${location} (${error}).`
+    );
   }
 }
 
@@ -95,11 +100,19 @@ function isDirectory(location) {
 function isCurrent(location) {
   try {
     return path.resolve(path.dirname(location)) !== path.resolve(".");
+  } catch (error) {
+    throw new Error(
+      `An error occured while trying resolve ${location} path (${error}).`
+    );
   }
-  catch (error) {
-    throw new Error(`An error occured while trying resolve ${location} path (${error}).`);
-  }
-
 }
 
-module.exports = { readFile, copyFile, isCurrent, isDirectory, writeFile, createDir, listFiles };
+module.exports = {
+  readFile,
+  copyFile,
+  isCurrent,
+  isDirectory,
+  writeFile,
+  createDir,
+  listFiles,
+};
