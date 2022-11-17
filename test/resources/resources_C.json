@@ -1,0 +1,6 @@
+{
+    "persistentVolumeClaim": [
+      "nginx-data",
+      "nginx-config"
+    ]
+  }

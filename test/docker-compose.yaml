@@ -1,0 +1,40 @@
+version: '3.1'
+
+services:
+  site1:
+    image: site:latest
+    volumes:
+    - ./resources/resources_A.json:/app/resources.json:ro
+    networks:
+    - bridge
+    environment:
+    - SITE_ID=site1
+    - RESOURCES_PATH=/resources.json
+    ports:
+    - 5001:5000
+  site2:
+    image: site:latest
+    volumes:
+    - ./resources/resources_B.json:/app/resources.json:ro
+    networks:
+    - bridge
+    environment:
+    - SITE_ID=site2
+    - RESOURCES_PATH=/resources.json
+    ports:
+    - 5002:5000
+  site3:
+    image: site:latest
+    volumes:
+    - ./resources/resources_C.json:/app/resources.json:ro
+    networks:
+    - bridge
+    environment:
+    - SITE_ID=site3
+    - RESOURCES_PATH=/resources.json
+    ports:
+    - 5003:5000
+
+networks:
+  bridge:
+    driver: bridge

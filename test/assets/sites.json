@@ -1,0 +1,16 @@
+{
+  "sites": [
+    {
+      "name": "site1",
+      "url": "http://localhost:5001"
+    },
+    {
+      "name": "site2",
+      "url": "http://localhost:5002"
+    },
+    {
+      "name": "site2",
+      "url": "http://localhost:5003"
+    }
+  ]
+}
