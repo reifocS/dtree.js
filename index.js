@@ -1,12 +1,45 @@
 var fs = require("fs"),
   path = require("path"),
   filePathJson = path.join(__dirname, "/assets/template.json");
-filePathYaml = path.join(__dirname, "/assets/config.yaml");
+filePathYaml = path.join(__dirname, "/assets/test.yaml");
 const YAML = require("yaml");
 var { performance } = require("perf_hooks");
 
 const isNestedObject = (property) => {
   return "$ref" in property;
+};
+
+function set(path, targetObj, value) {
+  const splitPath = path.split(".");
+  let cursor = targetObj;
+  for (let i = 0; i < splitPath.length - 1; ++i) {
+    const subPath = splitPath[i];
+    if (isArray(subPath)) {
+      const index = getIndices(subPath);
+      const tArrName = subPath.split("[");
+      const arrName = tArrName[0];
+      if (!cursor[arrName]) {
+        cursor[arrName] = [];
+      }
+      if (cursor[arrName][index]) {
+        cursor = cursor[arrName][index];
+      } else {
+        cursor[arrName][index] = {};
+        cursor = cursor[arrName][index];
+      }
+    } else {
+      cursor = cursor[subPath] = cursor[subPath] || {};
+    }
+  }
+  return (cursor[splitPath[splitPath.length - 1]] = value);
+}
+
+const isArray = (string) => {
+  return /\[\d+\]/.test(string);
+};
+
+const getIndices = (string) => {
+  return string.match(/\[(\d+)\]/)[1];
 };
 
 const getIdFromRef = (ref) => {
@@ -34,7 +67,6 @@ function dfs(propertyId, template, config, list) {
     return;
   }
   if (objInTemplate.required) {
-
     for (const required of objInTemplate.required) {
       //console.log(propertyId + "." + required + ":" + objInTemplate.properties[required].type);
       if (typeof valueC[required] !== "object") {
@@ -43,12 +75,12 @@ function dfs(propertyId, template, config, list) {
           value: `${valueC[required]}`,
         });
       }
-      //TODO if required === name 'supposed to be generic lol'
     }
   }
   for (const [k, v] of Object.entries(valueC)) {
     let templateRepresentation = objInTemplate.properties[k];
     //if it's an array, ref is nested inside items
+    //console.log(templateRepresentation);
     if (templateRepresentation.type === "array")
       templateRepresentation = templateRepresentation.items;
     if (templateRepresentation && isNestedObject(templateRepresentation)) {
@@ -81,12 +113,20 @@ const passes = Array(PASS)
     for (const [k, v] of Object.entries(template)) {
       if (v.properties?.kind?.enum) {
         if (v.properties.kind.enum[0] === root) {
-          dfs(k, template, [root, config], output);
+          dfs(k, template, ["config".toLowerCase(), config], output);
           break;
         }
       }
     }
+
+    //Build the output config with only required fields
+    const dObj = {};
+    for (const { path, value } of output) {
+      // console.log(eval(path));
+      set(path, dObj, value);
+    }
     console.log(output);
+    //console.log(JSON.stringify(dObj));
     const end = performance.now();
 
     const time = end - start;
