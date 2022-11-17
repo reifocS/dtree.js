@@ -49,7 +49,7 @@ const getIdFromRef = (ref) => {
 
 function validate(propertyId, template, config) {
   const objInTemplate = template[propertyId];
-  const [keyConfig, valueConfig] = config;
+  const [, valueConfig] = config;
   if (!objInTemplate) {
     throw new Error(`${propertyId} does not exist in definitions`);
   }
@@ -65,13 +65,11 @@ function validate(propertyId, template, config) {
       ? "array"
       : typeof valueConfig;
     if (typeInConfig !== objInTemplate.type) {
-      if (objInTemplate.type === "integer") {
-        if (isNaN(+valueConfig)) {
-          // numbers are converted to string during json parsing
-          throw new Error(
-            `invalid type for property ${propertyId}, expected ${objInTemplate.type} and got ${typeInConfig} ${valueConfig}`
-          );
-        }
+      if (objInTemplate.type === "integer" && isNaN(+valueConfig)) {
+        // numbers are converted to string during json parsing
+        throw new Error(
+          `invalid type for property ${propertyId}, expected ${objInTemplate.type} and got ${typeInConfig} ${valueConfig}`
+        );
       } else {
         throw new Error(
           `invalid type for property ${propertyId}, expected ${objInTemplate.type} and got ${typeInConfig}`
