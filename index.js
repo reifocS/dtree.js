@@ -46,6 +46,41 @@ const getIdFromRef = (ref) => {
   const r = ref.split("/");
   return r[r.length - 1];
 };
+
+function validate(propertyId, template, config) {
+  const objInTemplate = template[propertyId];
+  const [keyConfig, valueConfig] = config;
+  if (!objInTemplate) {
+    throw new Error(`${propertyId} does not exist in definitions`);
+  }
+  if (isNestedObject(objInTemplate)) {
+    //console.log(propertyId);
+    if (typeof valueConfig !== "object") {
+      throw new Error(
+        `invalid type for property ${propertyId}, expected object and got ${typeof valueConfig}`
+      );
+    }
+  } else if (objInTemplate.type) {
+    const typeInConfig = Array.isArray(valueConfig)
+      ? "array"
+      : typeof valueConfig;
+    if (typeInConfig !== objInTemplate.type) {
+      if (objInTemplate.type === "integer") {
+        if (isNaN(+valueConfig)) {
+          // numbers are converted to string during json parsing
+          throw new Error(
+            `invalid type for property ${propertyId}, expected ${objInTemplate.type} and got ${typeInConfig} ${valueConfig}`
+          );
+        }
+      } else {
+        throw new Error(
+          `invalid type for property ${propertyId}, expected ${objInTemplate.type} and got ${typeInConfig}`
+        );
+      }
+    }
+  }
+}
+
 /**
  *
  * @param {*} propertyId key in the definitions
@@ -61,11 +96,13 @@ function dfs(propertyId, template, config, list) {
   if (Array.isArray(valueC)) {
     let i = 0;
     for (const v of valueC) {
+      validate(propertyId, template, [keyC + "[" + i + "]", v]);
       dfs(propertyId, template, [keyC + "[" + i + "]", v], list);
       ++i;
     }
     return;
   }
+  validate(propertyId, template, config);
   if (objInTemplate.required) {
     for (const required of objInTemplate.required) {
       //console.log(propertyId + "." + required + ":" + objInTemplate.properties[required].type);
@@ -78,9 +115,9 @@ function dfs(propertyId, template, config, list) {
     }
   }
   for (const [k, v] of Object.entries(valueC)) {
+    validate(k, objInTemplate.properties, [k, v]);
     let templateRepresentation = objInTemplate.properties[k];
     //if it's an array, ref is nested inside items
-    //console.log(templateRepresentation);
     if (templateRepresentation.type === "array")
       templateRepresentation = templateRepresentation.items;
     if (templateRepresentation && isNestedObject(templateRepresentation)) {
@@ -90,22 +127,27 @@ function dfs(propertyId, template, config, list) {
   }
 }
 
+const readFiles = () => {
+  let templateFile = fs.readFileSync(filePathJson, {
+    encoding: "utf-8",
+    flag: "r",
+  });
+  let template = JSON.parse(templateFile).definitions;
+  let configFile = fs.readFileSync(filePathYaml, {
+    encoding: "utf-8",
+    flag: "r",
+  });
+  let config = YAML.parse(configFile);
+  return { config, template };
+};
+
 const PASS = 1;
 const passes = Array(PASS)
   .fill(0)
   .map(() => {
     const start = performance.now();
+    const { config, template } = readFiles();
 
-    let template = fs.readFileSync(filePathJson, {
-      encoding: "utf-8",
-      flag: "r",
-    });
-    template = JSON.parse(template).definitions;
-    let config = fs.readFileSync(filePathYaml, {
-      encoding: "utf-8",
-      flag: "r",
-    });
-    config = YAML.parse(config);
     const root = config.kind;
     let output = [];
 
@@ -113,7 +155,7 @@ const passes = Array(PASS)
     for (const [k, v] of Object.entries(template)) {
       if (v.properties?.kind?.enum) {
         if (v.properties.kind.enum[0] === root) {
-          dfs(k, template, ["config".toLowerCase(), config], output);
+          dfs(k, template, [root.toLowerCase(), config], output);
           break;
         }
       }
@@ -126,7 +168,7 @@ const passes = Array(PASS)
       set(path, dObj, value);
     }
     console.log(output);
-    //console.log(JSON.stringify(dObj));
+    console.log(YAML.stringify(dObj[root.toLowerCase()]));
     const end = performance.now();
 
     const time = end - start;
