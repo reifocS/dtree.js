@@ -65,11 +65,8 @@ function validate(propertyId, template, config) {
       ? "array"
       : typeof valueConfig;
     if (typeInConfig !== objInTemplate.type) {
-      if (objInTemplate.type === "integer" && isNaN(+valueConfig)) {
-        // numbers are converted to string during json parsing
-        throw new Error(
-          `invalid type for property ${propertyId}, expected ${objInTemplate.type} and got ${typeInConfig} ${valueConfig}`
-        );
+      if (objInTemplate.type === "integer" && typeInConfig === "number") {
+        return;
       } else {
         throw new Error(
           `invalid type for property ${propertyId}, expected ${objInTemplate.type} and got ${typeInConfig}`
