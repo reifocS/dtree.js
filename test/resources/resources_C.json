@@ -1,6 +1,18 @@
 {
-    "persistentVolumeClaim": [
-      "nginx-data",
-      "nginx-config"
-    ]
+  "pod": {
+    "spec": {
+      "volumes": [
+        {
+          "persistentVolumeClaim": [
+            { 
+              "persistentVolumeClaim": { "claimName": "nginx-data" }
+            },
+            {
+              "persistentVolumeClaim": { "claimName": "nginx-config" }
+            }
+          ]
+        }
+      ]
+    }
   }
+}

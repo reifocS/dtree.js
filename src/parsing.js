@@ -147,7 +147,7 @@ function dfs(propertyId, template, config, list) {
 /**
  *
  */
-function parse(config, template) {
+function findRequirements(config, template) {
   const root = config.kind;
   if (root === undefined) {
     throw new Error("Kind not specified in config");
@@ -178,7 +178,54 @@ function parse(config, template) {
   }
 
   // console.log(yaml.stringify(dObj[root.toLowerCase()]))
-  return output;
+  return { outputAsList: output, outputAsTree: dObj };
 }
 
-module.exports = { parse };
+/**
+ * Fill requirements with the origin for all ressources provided
+ * @param { { path: string[], value: string} } requirement
+ * @param {any} ressources
+ * @param {string} origin
+ *
+ * @return {boolean}
+ */
+function meetsRequirement(requirement, ressources, origin) {
+  // we have reached the end of the path succefully. To check if the requirement
+  // is a ressource, we only have to compare the 'value' and the remaining path.
+  if (!requirement.path.length) {
+    return requirement.value == ressources; // check if it correspond
+  }
+
+  let path = requirement.path.shift();
+
+  if (isArray(ressources)) {
+    // We remove the array index from the path as it is
+    // not related to the ressources potential index
+    const bracket_index = path.indexOf("[");
+
+    if (bracket_index < 0) {
+      throw new Error(`TODO`);
+    }
+
+    path = path.substring(0, bracket_index); // we keep only the array name
+
+    // now, we need to find the real index of the ressource
+    // we can call this function for each sub index of ressources
+
+    for (const item of ressources) {
+      if (meetsRequirement(requirement, item, origin)) {
+        return true;
+      }
+    }
+  } else {
+    if (!ressources[path]) {
+      return false; // the requirement was not in the ressources, we don't do anything
+    }
+
+    return meetsRequirement(requirement, ressources[path], origin);
+  }
+
+  return false;
+}
+
+module.exports = { findRequirements, meetsRequirement };
