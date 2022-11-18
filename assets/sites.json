@@ -1,0 +1,16 @@
+{
+  "sites": [
+    {
+      "id": "site1",
+      "url": "http://site1:5001"
+    },
+    {
+      "id": "site2",
+      "url": "http://site2:5002"
+    },
+    {
+      "id": "site3",
+      "url": "http://site3:5003"
+    }
+  ]
+}

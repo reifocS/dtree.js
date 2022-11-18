@@ -1,0 +1,11 @@
+{
+  "pod": {
+    "spec": {
+      "containers": [
+        {
+          "name": "nginx"
+        }
+      ]
+    }
+  }
+}

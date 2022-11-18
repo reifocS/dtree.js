@@ -1,4 +1,4 @@
-FROM node:16
+FROM node:latest
 
 # Create app directory
 WORKDIR /app
@@ -13,5 +13,5 @@ RUN npm install
 # Bundle app source
 COPY . .
 
-EXPOSE 3000
+EXPOSE 5000
 CMD [ "npm", "run", "start" ]
