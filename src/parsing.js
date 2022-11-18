@@ -209,6 +209,7 @@ function meetsRequirement(requirement, ressources, origin, index = 0) {
     // now, we need to find the real index of the ressource
     // we can call this function for each sub index of ressources
     if (ressources[path] === undefined) return false;
+    // We dive in because arrays are defined in path as arr[0] and not arr.[0]
     ressources = ressources[path];
     for (const item of ressources) {
       if (meetsRequirement(requirement, item, origin, index + 1)) {

@@ -144,7 +144,7 @@ app.post("/verify", async (req, res) => {
     path: s.path.join("."),
   }));
 
-  res.send(requirements, null, 2);
+  res.send(requirements);
 });
 
 app.listen(PORT, HOST, () => {
