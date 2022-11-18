@@ -189,40 +189,40 @@ function findRequirements(config, template) {
  *
  * @return {boolean}
  */
-function meetsRequirement(requirement, ressources, origin) {
+function meetsRequirement(requirement, ressources, origin, index = 0) {
   // we have reached the end of the path succefully. To check if the requirement
   // is a ressource, we only have to compare the 'value' and the remaining path.
-  if (!requirement.path.length) {
+  if (index >= requirement.path.length) {
+    console.log("end")
     return requirement.value == ressources; // check if it correspond
   }
 
-  let path = requirement.path.shift();
+  let path = requirement.path[index];
+  const bracket_index = path.indexOf("[");
 
-  if (isArray(ressources)) {
+  if (bracket_index >= 0) {
     // We remove the array index from the path as it is
     // not related to the ressources potential index
-    const bracket_index = path.indexOf("[");
-
-    if (bracket_index < 0) {
-      throw new Error(`TODO`);
-    }
-
     path = path.substring(0, bracket_index); // we keep only the array name
+  }
 
+  if (isArray(ressources)) {
+    console.log("Array ", path)
     // now, we need to find the real index of the ressource
     // we can call this function for each sub index of ressources
 
     for (const item of ressources) {
-      if (meetsRequirement(requirement, item, origin)) {
+      if (meetsRequirement(requirement, item, origin, index + 1)) {
         return true;
       }
     }
   } else {
     if (!ressources[path]) {
+      console.log({path}, {ressources}, index);
       return false; // the requirement was not in the ressources, we don't do anything
     }
 
-    return meetsRequirement(requirement, ressources[path], origin);
+    return meetsRequirement(requirement, ressources[path], origin, index + 1);
   }
 
   return false;
