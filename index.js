@@ -59,6 +59,36 @@ app.get("/", (req, res) => {
 });
 
 app.post("/verify", async (req, res) => {
+  
+  const config = YAML.parse(req.body.config);
+
+  // 1. Check first in local
+  
+  // get required fields in the user config
+
+  const { outputAsList, outputAsTree } = findRequirements(
+    config,
+    template.definitions
+  );
+
+  const splittedRequirements = outputAsList.map((r) => ({
+    value: r.value,
+    path: r.path.split("."),
+    origin: [],
+  }));
+
+  const local_ressources = JSON.parse(readFile(RESOURCES_PATH))
+
+  for (const requirement of splittedRequirements) {
+    const requirement_copy = { ...requirement };
+    // We check if the requirement is in the resource
+    if (meetsRequirement(requirement_copy, local_ressources, SITE_ID)) {
+      requirement.origin.push(SITE_ID); // we fill the requirement with the resource origin
+    }
+  }
+  
+  // 2. Then check for each distant locations
+
   // recovers the sites urls
   const sites_id_list = JSON.parse(req.body.sites) || [];
   const sites_config = JSON.parse(readFile(SITES_PATH)).sites;
@@ -72,20 +102,6 @@ app.post("/verify", async (req, res) => {
     return site;
   });
 
-  // get required fields in the user config
-  const config = YAML.parse(req.body.config);
-
-  const { outputAsList, outputAsTree } = findRequirements(
-    config,
-    template.definitions
-  );
-
-  const splittedRequirements = outputAsList.map((r) => ({
-    value: r.value,
-    path: r.path.split("."),
-    origin: null,
-  }));
-
   for (const site of sites) {
     const response = await fetch(site.url + "/resources");
     const ressources = await response.json();
@@ -93,7 +109,7 @@ app.post("/verify", async (req, res) => {
       const requirement_copy = { ...requirement };
       // We check if the requirement is in the resource
       if (meetsRequirement(requirement_copy, ressources, site.id)) {
-        requirement.origin = site.id; // we fill the requirement with the resource origin
+        requirement.origin.push(site.id); // we fill the requirement with the resource origin
       }
     }
   }
