@@ -59,11 +59,10 @@ app.get("/", (req, res) => {
 });
 
 app.post("/verify", async (req, res) => {
-  
   const config = YAML.parse(req.body.config);
 
   // 1. Check first in local
-  
+
   // get required fields in the user config
 
   const { outputAsList, outputAsTree } = findRequirements(
@@ -77,7 +76,7 @@ app.post("/verify", async (req, res) => {
     origin: [],
   }));
 
-  const local_ressources = JSON.parse(readFile(RESOURCES_PATH))
+  const local_ressources = JSON.parse(readFile(RESOURCES_PATH));
 
   for (const requirement of splittedRequirements) {
     const requirement_copy = { ...requirement };
@@ -86,7 +85,16 @@ app.post("/verify", async (req, res) => {
       requirement.origin.push(SITE_ID); // we fill the requirement with the resource origin
     }
   }
-  
+
+  // We don't need to query distant db
+  if (splittedRequirements.every((p) => p.origin.length > 0)) {
+    const requirements = splittedRequirements.map((s) => ({
+      ...s,
+      path: s.path.join("."),
+    }));
+
+    res.send(requirements);
+  }
   // 2. Then check for each distant locations
 
   // recovers the sites urls
