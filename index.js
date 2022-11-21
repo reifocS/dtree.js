@@ -39,8 +39,13 @@ app.use(
     extended: true, // to support URL-encoded bodies
   })
 );
-const template = JSON.parse(readFile(TEMPLATE_PATH));
-
+/*const template = JSON.parse(readFile(TEMPLATE_PATH));
+const config = YAML.parse(readFile(CONFIG_PATH));
+const { outputAsList, outputAsTree } = findRequirements(
+  config,
+  template.definitions
+);
+console.log(outputAsList);*/
 app.get("/", (req, res) => {
   const config = YAML.parse(readFile(CONFIG_PATH));
   const { outputAsList, outputAsTree } = findRequirements(
