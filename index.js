@@ -25,7 +25,7 @@ const TEMPLATE_PATH = path.join(
 );
 const CONFIG_PATH = path.join(
   __dirname,
-  process.env.CONFIG_PATH || "/assets/config2.yaml"
+  process.env.CONFIG_PATH || "/assets/deployment.yaml"
 );
 const RESOURCES_PATH = path.join(
   __dirname,

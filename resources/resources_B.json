@@ -6,6 +6,9 @@
           "persistentVolumeClaim": {
             "claimName": "nginx-data"
           }
+        },
+        {
+          "name": "foo"
         }
       ]
     }
