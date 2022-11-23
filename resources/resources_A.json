@@ -3,8 +3,7 @@
     "spec": {
       "containers": [
         {
-          "name": "nginx",
-          "location": "site3"
+          "name": "nginx"
         },
         {
           "name": "mypod",
