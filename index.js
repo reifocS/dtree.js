@@ -70,10 +70,14 @@ app.post("/verify", async (req, res) => {
 
   // get required fields in the user config
 
-  const { outputAsList, outputAsTree } = findRequirements(
+  const { outputAsList, error } = findRequirements(
     config,
     template.definitions
   );
+
+  if (error) {
+    return res.status(400).send(error);
+  }
 
   const splittedRequirements = outputAsList.map((r) => ({
     value: r.value,
@@ -83,11 +87,13 @@ app.post("/verify", async (req, res) => {
 
   const local_ressources = JSON.parse(readFile(RESOURCES_PATH));
 
+  // Todo surround with try catch
   for (const requirement of splittedRequirements) {
     const requirement_copy = { ...requirement };
     // We check if the requirement is in the resource
-    if (meetsRequirement(requirement_copy, local_ressources, SITE_ID)) {
-      requirement.origin.push(SITE_ID); // we fill the requirement with the resource origin
+    const id = meetsRequirement(requirement_copy, local_ressources, SITE_ID);
+    if (id) {
+      requirement.origin.push(id); // we fill the requirement with the resource origin
     }
   }
 
@@ -121,8 +127,9 @@ app.post("/verify", async (req, res) => {
     for (const requirement of splittedRequirements) {
       const requirement_copy = { ...requirement };
       // We check if the requirement is in the resource
-      if (meetsRequirement(requirement_copy, ressources, site.id)) {
-        requirement.origin.push(site.id); // we fill the requirement with the resource origin
+      const id = meetsRequirement(requirement_copy, ressources, site.id);
+      if (id) {
+        requirement.origin.push(id); // we fill the requirement with the resource origin
       }
     }
   }
