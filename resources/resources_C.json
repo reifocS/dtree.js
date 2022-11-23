@@ -1,14 +1,23 @@
 {
-  "pod": {
-    "spec": {
-      "volumes": [
-        { 
-          "persistentVolumeClaim": { "claimName": "nginx-data" }
-        },
-        {
-          "persistentVolumeClaim": { "claimName": "nginx-config" }
-        }
-      ]
+  "distant": {},
+  "local": {
+    "pod": {
+      "spec": {
+        "containers": [
+          {
+            "name": "mypod",
+            "volumeMounts": [{ "name": "foo", "mountPath": "/etc/foo" }]
+          }
+        ],
+        "volumes": [
+          {
+            "persistentVolumeClaim": { "claimName": "nginx-data" }
+          },
+          {
+            "persistentVolumeClaim": { "claimName": "nginx-config" }
+          }
+        ]
+      }
     }
   }
 }

@@ -65,29 +65,47 @@ app.get("/", (req, res) => {
 
 app.post("/verify", async (req, res) => {
   const config = YAML.parse(req.body.config);
+  const sites_id_list = JSON.parse(req.body.sites) || [];
 
   // 1. Check first in local
 
   // get required fields in the user config
 
-  const { outputAsList, outputAsTree } = findRequirements(
+  const { outputAsList, error } = findRequirements(
     config,
     template.definitions
   );
-
+  if (error) {
+    return res.status(400).send(error);
+  }
   const splittedRequirements = outputAsList.map((r) => ({
     value: r.value,
     path: r.path.split("."),
     origin: [],
   }));
 
-  const local_ressources = JSON.parse(readFile(RESOURCES_PATH));
+  const ressourcesInDb = JSON.parse(readFile(RESOURCES_PATH));
 
-  for (const requirement of splittedRequirements) {
-    const requirement_copy = { ...requirement };
-    // We check if the requirement is in the resource
-    if (meetsRequirement(requirement_copy, local_ressources, SITE_ID)) {
-      requirement.origin.push(SITE_ID); // we fill the requirement with the resource origin
+  function checkAllRequirements(requirements, ressources, siteId) {
+    for (const requirement of requirements) {
+      const requirement_copy = { ...requirement };
+      // We check if the requirement is in the resource
+      if (meetsRequirement(requirement_copy, ressources, siteId)) {
+        requirement.origin.push(siteId); // we fill the requirement with the resource origin
+      }
+    }
+  }
+
+  checkAllRequirements(splittedRequirements, ressourcesInDb.local, SITE_ID);
+
+  //Check if we have info for distant in our local db
+  for (const site of sites_id_list) {
+    if (ressourcesInDb.distant[site]) {
+      checkAllRequirements(
+        splittedRequirements,
+        ressourcesInDb.distant[site],
+        site
+      );
     }
   }
 
@@ -103,7 +121,6 @@ app.post("/verify", async (req, res) => {
   // 2. Then check for each distant locations
 
   // recovers the sites urls
-  const sites_id_list = JSON.parse(req.body.sites) || [];
   const sites_config = JSON.parse(readFile(SITES_PATH)).sites;
   const sites = sites_id_list.map((site_id) => {
     const site = sites_config.find((c) => c.id === site_id);
@@ -118,10 +135,11 @@ app.post("/verify", async (req, res) => {
   for (const site of sites) {
     const response = await fetch(site.url + "/resources");
     const ressources = await response.json();
+    const ressourcesInSite = ressources.local;
     for (const requirement of splittedRequirements) {
       const requirement_copy = { ...requirement };
       // We check if the requirement is in the resource
-      if (meetsRequirement(requirement_copy, ressources, site.id)) {
+      if (meetsRequirement(requirement_copy, ressourcesInSite, site.id)) {
         requirement.origin.push(site.id); // we fill the requirement with the resource origin
       }
     }
