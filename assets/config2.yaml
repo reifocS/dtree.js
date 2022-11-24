@@ -4,26 +4,26 @@ metadata:
   name: nginx
 spec:
   containers:
-  - name: nginx
-    image: nginx:1.14.2
-    ports:
-    - containerPort: 80
-    volumeMounts:
-    - name: data
-      mountPath: /var/www/html
-    - name: config
-      mountPath: /etc/nginx/nginx.conf
-      subPath: /etc/nginx/nginx.conf
-    - name: cdn
-      mountPath: /var/www/html/assets
-      readOnly: true
+    - name: nginx
+      image: nginx:1.14.2
+      ports:
+        - containerPort: 80
+      volumeMounts:
+        - name: data
+          mountPath: /var/www/html
+        - name: config
+          mountPath: /etc/nginx/nginx.conf
+          subPath: /etc/nginx/nginx.conf
+        - name: cdn
+          mountPath: /var/www/html/assets
+          readOnly: true
   volumes:
-  - name: data
-    persistentVolumeClaim:
-      claimName: nginx-data
-  - name: config
-    persistentVolumeClaim:
-      claimName: nginx-config
-  - name: cdn
-    gcePersistentDisk:
-      pdName: app-cdn
+    - name: data
+      persistentVolumeClaim:
+        claimName: nginx-data
+    - name: config
+      persistentVolumeClaim:
+        claimName: nginx-config
+    - name: cdn
+      gcePersistentDisk:
+        pdName: app-cdn

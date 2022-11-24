@@ -6,15 +6,15 @@
         "containers": [
           {
             "name": "mypod",
-            "volumeMounts": [{ "name": "foo", "mountPath": "/etc/foo" }]
+            "volumeMounts": [{"name": "foo", "mountPath": "/etc/foo"}]
           }
         ],
         "volumes": [
           {
-            "persistentVolumeClaim": { "claimName": "nginx-data" }
+            "persistentVolumeClaim": {"claimName": "nginx-data"}
           },
           {
-            "persistentVolumeClaim": { "claimName": "nginx-config" }
+            "persistentVolumeClaim": {"claimName": "nginx-config"}
           }
         ]
       }

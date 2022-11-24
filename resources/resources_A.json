@@ -6,7 +6,7 @@
           "containers": [
             {
               "name": "mypod",
-              "volumeMounts": [{ "name": "foo", "mountPath": "/etc/foo" }]
+              "volumeMounts": [{"name": "foo", "mountPath": "/etc/foo"}]
             }
           ]
         }

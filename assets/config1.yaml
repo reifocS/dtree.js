@@ -4,14 +4,14 @@ metadata:
   name: mypod
 spec:
   containers:
-  - name: mypod
-    image: redis
-    volumeMounts:
-    - name: foo
-      mountPath: "/etc/foo"
-      readOnly: true
+    - name: mypod
+      image: redis
+      volumeMounts:
+        - name: foo
+          mountPath: '/etc/foo'
+          readOnly: true
   volumes:
-  - name: foo
-    secret:
-      secretName: mysecret
-      optional: false # default setting; "mysecret" must exist
+    - name: foo
+      secret:
+        secretName: mysecret
+        optional: false # default setting; "mysecret" must exist
