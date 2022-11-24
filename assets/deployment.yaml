@@ -1,29 +1,37 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: redis-leader
-  labels:
-    app: redis
-    role: leader
-    tier: backend
+  name: init-container-msg-deployment
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: redis
+      app: init-container-msg-app
   template:
     metadata:
       labels:
-        app: redis
-        role: leader
-        tier: backend
+        app: init-container-msg-app
     spec:
+      initContainers:
+        - command:
+            - "/bin/sh"
+            - "-c"
+            - "echo 'message from init' > /init-container-msg-mount-path/this"
+          image: busybox
+          name: init-container-msg-container-init
+          volumeMounts:
+            - mountPath: /init-container-msg-mount-path
+              name: init-container-msg-volume
       containers:
-      - name: leader
-        image: "docker.io/redis:6.0.5"
-        resources:
-          requests:
-            cpu: 100m
-            memory: 100Mi
-        ports:
-        - containerPort: 6379
+        - command:
+            - "/bin/sh"
+            - "-c"
+            - "while true; do cat /init-container-msg-mount-path/this; sleep 5; done"
+          image: busybox
+          name: init-container-msg-container-main
+          volumeMounts:
+            - mountPath: /init-container-msg-mount-path
+              name: init-container-msg-volume
+      volumes:
+        - emptyDir: {}
+          name: init-container-msg-volume
