@@ -44,6 +44,12 @@ app.use(
 );
 const template = JSON.parse(readFile(TEMPLATE_PATH));
 
+function allRequirementsAreFilled(requirements) {
+  return requirements.every(p => {
+    return p.origin.length > 0;
+  });
+}
+
 /**
  * Check in local database for availlabel ressources and fill the
  * splitted requirements given in parameter with found locations
@@ -65,6 +71,7 @@ function verifyLocal(splittedRequirements, ressourcesInDb, sitesIdList) {
       );
     }
   }
+  return allRequirementsAreFilled(splittedRequirements);
 }
 
 /**
@@ -78,16 +85,11 @@ async function verifyRemote(splittedRequirements, sites) {
     console.log(`verifying for distant ${site.id}`);
     const response = await fetch(site.url + '/resources');
     const ressources = await response.json();
-
     const ressourcesInSite = ressources.local;
-    for (const requirement of splittedRequirements) {
-      const requirement_copy = {...requirement};
-
-      // We check if the requirement is in the resource
-      if (meetsRequirement(requirement_copy, ressourcesInSite, site.id)) {
-        if (!requirement.origin.find(origin => origin === site.id))
-          requirement.origin.push(site.id); // we fill the requirement with the resource origin
-      }
+    checkAllRequirements(splittedRequirements, ressourcesInSite, site.id);
+    if (allRequirementsAreFilled(splittedRequirements)) {
+      console.log(`All requirements at met, not need to query other sites`);
+      break;
     }
   }
 }
@@ -154,12 +156,12 @@ app.post('/verify', async (req, res) => {
     }));
 
     // 1. CHECK FIRST IN LOCAL
-    verifyLocal(splittedRequirements, ressourcesInDb, sitesIdList);
-
     // If we have everything is in local, then we don't need to query distant db
-    const everythingPresentInLocal = splittedRequirements.every(p => {
-      return p.origin.length > 0;
-    });
+    const everythingPresentInLocal = verifyLocal(
+      splittedRequirements,
+      ressourcesInDb,
+      sitesIdList
+    );
 
     if (everythingPresentInLocal) {
       console.log('Everything present in local, no need to query distant DB');
