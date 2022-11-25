@@ -84,7 +84,8 @@ async function verifyRemote(splittedRequirements, sites) {
 
       // We check if the requirement is in the resource
       if (meetsRequirement(requirement_copy, ressourcesInSite, site.id)) {
-        requirement.origin.push(site.id); // we fill the requirement with the resource origin
+        if (!requirement.origin.find(origin => origin === site.id))
+          requirement.origin.push(site.id); // we fill the requirement with the resource origin
       }
     }
   }
@@ -155,13 +156,13 @@ app.post('/verify', async (req, res) => {
     verifyLocal(splittedRequirements, ressourcesInDb, sitesIdList);
 
     // If we have everything is in local, then we don't need to query distant db
-    const evrythingPresentInLocal = splittedRequirements.every(p => {
+    const everythingPresentInLocal = splittedRequirements.every(p => {
       return p.origin.length > 0;
     });
 
     // 2. OTHERWISE, WE HAVE TO CHECK FOR EACH DISTANT LOCATION
-    if (!evrythingPresentInLocal) {
-      verifyRemote(splittedRequirements, sites);
+    if (!everythingPresentInLocal) {
+      await verifyRemote(splittedRequirements, sites);
     }
   } catch (error) {
     console.error(error);
