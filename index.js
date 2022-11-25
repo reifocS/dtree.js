@@ -107,7 +107,7 @@ app.get('/', (req, res) => {
     output = findRequirements(config, template.definitions);
   } catch (error) {
     console.error(error);
-    return res.status(400).send(error);
+    return res.status(400).send(error.message);
   }
 
   res.send(
@@ -170,7 +170,7 @@ app.post('/verify', async (req, res) => {
     }
   } catch (error) {
     console.error(error);
-    return res.status(400).send(error);
+    return res.status(400).send(error.message);
   }
 
   // We reconstruct the paths from the splitted requirements
