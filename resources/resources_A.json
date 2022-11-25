@@ -1,11 +1,27 @@
 {
-  "pod": {
-    "spec": {
-      "containers": [
-        {
-          "name": "nginx"
+  "distant": {
+    "site3": {
+      "pod": {
+        "spec": {
+          "containers": [
+            {
+              "name": "mypod",
+              "volumeMounts": [{"name": "foo", "mountPath": "/etc/foo"}]
+            }
+          ]
         }
-      ]
+      }
+    }
+  },
+  "local": {
+    "pod": {
+      "spec": {
+        "containers": [
+          {
+            "name": "nginx"
+          }
+        ]
+      }
     }
   }
 }

@@ -1,13 +1,24 @@
 {
-  "pod": {
-    "spec": {
-      "volumes": [
-        {
-          "persistentVolumeClaim": {
-            "claimName": "nginx-data"
+  "distant": {},
+  "local": {
+    "pod": {
+      "spec": {
+        "volumes": [
+          {
+            "persistentVolumeClaim": {
+              "claimName": "nginx-data"
+            }
+          },
+          {
+            "name": "foo"
+          },
+          {
+            "secret": {
+              "secretName": "mysecret"
+            }
           }
-        }
-      ]
+        ]
+      }
     }
   }
 }
