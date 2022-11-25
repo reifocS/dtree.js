@@ -183,7 +183,7 @@ app.post('/verify', async (req, res) => {
   if (missingRequirements.length > 0) {
     console.warn(
       `Some requirements are not satisfied \n ${missingRequirements
-        .map(({path}) => '- ' + path)
+        .map(({path, value}) => '- ' + path + ': ' + value)
         .join(`\n `)}`
     );
   }
