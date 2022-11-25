@@ -1,6 +1,25 @@
 {
   "distant": {},
   "local": {
+    "deployment": {
+      "spec": {
+        "template": {
+          "spec": {
+            "containers": [
+              {
+                "name": "init-container-msg-container-main",
+                "volumeMounts": [
+                  {
+                    "name": "init-container-msg-volume",
+                    "mountPath": "/init-container-msg-mount-path"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
     "pod": {
       "spec": {
         "containers": [

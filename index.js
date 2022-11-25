@@ -75,6 +75,7 @@ function verifyLocal(splittedRequirements, ressourcesInDb, sitesIdList) {
  */
 async function verifyRemote(splittedRequirements, sites) {
   for (const site of sites) {
+    console.log(`verifying for distant ${site.id}`);
     const response = await fetch(site.url + '/resources');
     const ressources = await response.json();
 
@@ -160,6 +161,9 @@ app.post('/verify', async (req, res) => {
       return p.origin.length > 0;
     });
 
+    if (everythingPresentInLocal) {
+      console.log('Everything present in local, no need to query distant DB');
+    }
     // 2. OTHERWISE, WE HAVE TO CHECK FOR EACH DISTANT LOCATION
     if (!everythingPresentInLocal) {
       await verifyRemote(splittedRequirements, sites);
@@ -173,7 +177,16 @@ app.post('/verify', async (req, res) => {
   const requirements = splittedRequirements.map(s => {
     return {...s, path: s.path.join('.')};
   });
-
+  const missingRequirements = requirements.filter(
+    ({origin}) => origin.length === 0
+  );
+  if (missingRequirements.length > 0) {
+    console.warn(
+      `Some requirements are not satisfied \n ${missingRequirements
+        .map(({path}) => '- ' + path)
+        .join(`\n `)}`
+    );
+  }
   res.send(requirements);
 });
 
