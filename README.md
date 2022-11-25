@@ -4,7 +4,7 @@
 
 ## Introduction
 
-### Problematic
+### Context
 
 This project was realized during the research awareness course of the IMT Atlantic's software engineering program. 
 
