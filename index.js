@@ -98,6 +98,7 @@ async function verifyRemote(splittedRequirements, sites) {
 //                      API EXPOSITIONS
 // ==========================================================
 
+// For debugging, print the initial dependency tree without locations in two formats
 app.get('/', (req, res) => {
   let output;
 
